@@ -21,7 +21,7 @@ infra/ # scripts K3S, Helm values
 
 docs/ # rapport Markdown + images
 
-.github/ # workflows CI/CD
+.github/ # workflows CI/CD 
 
 Makefile # raccourcis build/test/deploy
 
