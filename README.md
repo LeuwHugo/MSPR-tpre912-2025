@@ -1,13 +1,5 @@
 # MSPR-tpre912-2025
-MSPR tpre912 réaliser dans le cadre d'une formation Master 5 à l'école EPSI 
-
-# ─── arborescence ─────────────────────────────────────────────
-mkdir -p backend frontend infra docs/{img,diagrams} .github/workflows
-
-# ─── README.md ────────────────────────────────────────────────
-cat > README.md <<'EOF'
-# MSPR TPRE912 – Projet Solo
-
+Mise en situation professionel numéro tpre912 réaliser dans le cadre d'une formation Master 5 à l'école EPSI 
 > Preuve de concept “Serverless identité” – Juin 2025  
 > École : I2 EISI · Auteur : Hugo-Reddy Leuwat-Kwetchoua
 
