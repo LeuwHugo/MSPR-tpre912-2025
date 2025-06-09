@@ -23,5 +23,5 @@ Makefile # raccourcis build/test/deploy
 ## 🚀 Installation rapide
 ```bash
 git clone <url>
-cd mspr-tpre912-solo
-make dev        # lance OpenFaaS + frontend hot-reload
+cd MSPR-tpre912-2025
+make dev # lance OpenFaaS + frontend hot-reload
