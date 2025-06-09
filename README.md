@@ -14,10 +14,15 @@ Mise en situation professionel numéro tpre912 réaliser dans le cadre d'une for
 
 ## 📂 Structure du dépôt
 backend/ # code des fonctions FaaS
+
 frontend/ # SPA React
+
 infra/ # scripts K3S, Helm values
+
 docs/ # rapport Markdown + images
+
 .github/ # workflows CI/CD
+
 Makefile # raccourcis build/test/deploy
 
 ## 🚀 Installation rapide
