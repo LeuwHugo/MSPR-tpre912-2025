@@ -1,2 +1,35 @@
 # MSPR-tpre912-2025
 MSPR tpre912 réaliser dans le cadre d'une formation Master 5 à l'école EPSI 
+
+# ─── arborescence ─────────────────────────────────────────────
+mkdir -p backend frontend infra docs/{img,diagrams} .github/workflows
+
+# ─── README.md ────────────────────────────────────────────────
+cat > README.md <<'EOF'
+# MSPR TPRE912 – Projet Solo
+
+> Preuve de concept “Serverless identité” – Juin 2025  
+> École : I2 EISI · Auteur : Hugo-Reddy Leuwat-Kwetchoua
+
+## ⚡ Stack
+| Couche | Techno | Rôle |
+|--------|--------|------|
+| Serverless | **OpenFaaS** + K3S | Scale-to-zero |
+| Fonctions | **Python 3.12** | `genPwd`, `gen2FA`, `authUser` |
+| Base | **PostgreSQL 16 + pgcrypto** | Stockage hash + secrets |
+| Frontend | **React + Vite** | SPA accessible (WCAG AA) |
+| Observabilité | **Prometheus + Grafana** | KPI temps réel |
+
+## 📂 Structure du dépôt
+backend/ # code des fonctions FaaS
+frontend/ # SPA React
+infra/ # scripts K3S, Helm values
+docs/ # rapport Markdown + images
+.github/ # workflows CI/CD
+Makefile # raccourcis build/test/deploy
+
+## 🚀 Installation rapide
+```bash
+git clone <url>
+cd mspr-tpre912-solo
+make dev        # lance OpenFaaS + frontend hot-reload
