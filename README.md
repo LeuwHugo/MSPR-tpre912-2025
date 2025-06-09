@@ -1,5 +1,5 @@
 # MSPR-tpre912-2025
-Mise en situation professionel numéro tpre912 réaliser dans le cadre d'une formation Master 5 à l'école EPSI 
+Mise en situation professionnel numéro tpre912 réaliser dans le cadre d'une formation Master 5 à l'école EPSI 
 > Preuve de concept “Serverless identité” – Juin 2025  
 > École : I2 EISI · Auteur : Hugo-Reddy Leuwat-Kwetchoua
 
