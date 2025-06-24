@@ -1,0 +1,27 @@
+version: "1.0"
+provider:
+  name: openfaas
+  gateway: http://localhost:8080
+  network: toto  # Remplacez mspr-tpre912-2025_openfaas par toto
+env-common: &ref-env
+  PYTHONPATH: "/home/app/function:/home/app/function/../common"
+  DB_HOST: db
+  DB_USER: faas
+  DB_PASS: faaspass
+  DB_NAME: cofrap
+functions:
+  genpwd:
+    lang: python3-http
+    handler: ./genpwd
+    image: genpwd:latest
+    environment: *ref-env
+  gen2fa:
+    lang: python3-http
+    handler: ./gen2fa
+    image: gen2fa:latest
+    environment: *ref-env
+  authuser:
+    lang: python3-http
+    handler: ./authuser
+    image: authuser:latest
+    environment: *ref-env

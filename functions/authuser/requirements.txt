@@ -1,0 +1,3 @@
+passlib[bcrypt]
+pyotp
+psycopg2-binary

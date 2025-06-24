@@ -1,0 +1,74 @@
+networks:
+  toto:
+    driver: overlay
+    attachable: true
+services:
+  nats:
+    image: nats-streaming:0.25.6
+    command: ["-cid","faas-cluster","-store","memory","-p","4222","-m","8222"]
+    restart: always
+    networks: [toto]
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports: ["9090:9090"]
+    networks: [toto]
+  faas-swarm:
+    image: functions/faas-swarm:0.3.3
+    restart: always
+    command: ["./faas-swarm","--port=8080","--basic_auth=true"]
+    environment:
+      - basic_auth=true
+      - secret_mount_path=/run/secrets
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./secrets/basic-auth-user:/run/secrets/basic-auth-user
+      - ./secrets/basic-auth-password:/run/secrets/basic-auth-password
+    networks: [toto]
+  gateway:
+    image: ghcr.io/openfaas/gateway:0.27.12
+    restart: always
+    environment:
+      - basic_auth=true
+      - functions_provider_url=http://faas-swarm:8080/
+      - faas_nats_address=nats
+      - faas_nats_port=4222
+      - scale_from_zero=true
+      - secret_mount_path=/run/secrets
+    depends_on: [nats,faas-swarm,prometheus]
+    volumes:
+      - ./secrets/basic-auth-user:/run/secrets/basic-auth-user
+      - ./secrets/basic-auth-password:/run/secrets/basic-auth-password
+    ports: ["8080:8080"]
+    networks: [toto]
+  queue-worker:
+    image: ghcr.io/openfaas/queue-worker:0.14.2
+    restart: always
+    environment:
+      - faas_gateway_address=gateway
+      - faas_gateway_port=8080
+      - faas_nats_address=nats
+      - faas_nats_port=4222
+      - basic_auth=true
+      - secret_mount_path=/run/secrets
+    depends_on: [nats,gateway]
+    volumes:
+      - ./secrets/basic-auth-user:/run/secrets/basic-auth-user
+      - ./secrets/basic-auth-password:/run/secrets/basic-auth-password
+    networks: [toto]
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: faas
+      POSTGRES_PASSWORD: faaspass
+      POSTGRES_DB: cofrap
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./pg-init:/docker-entrypoint-initdb.d
+    ports: ["5432:5432"]
+    networks: [toto]
+volumes:
+  pg-data:
