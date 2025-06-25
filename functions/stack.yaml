@@ -2,8 +2,7 @@ version: "1.0"
 provider:
   name: openfaas
   gateway: http://localhost:8080
-  network: toto  # Remplacez mspr-tpre912-2025_openfaas par toto
-env-common: &ref-env
+  env-common: &ref-env
   PYTHONPATH: "/home/app/function:/home/app/function/../common"
   DB_HOST: db
   DB_USER: faas

@@ -1,20 +1,21 @@
 networks:
-  toto:
+  walix-net:
     driver: overlay
-    attachable: true
+    attachable: true   
 services:
+
   nats:
     image: nats-streaming:0.25.6
     command: ["-cid","faas-cluster","-store","memory","-p","4222","-m","8222"]
     restart: always
-    networks: [toto]
+    networks: [walix-net]
   prometheus:
     image: prom/prometheus:v3.1.0
     restart: always
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports: ["9090:9090"]
-    networks: [toto]
+    networks: [walix-net]
   faas-swarm:
     image: functions/faas-swarm:0.3.3
     restart: always
@@ -26,7 +27,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./secrets/basic-auth-user:/run/secrets/basic-auth-user
       - ./secrets/basic-auth-password:/run/secrets/basic-auth-password
-    networks: [toto]
+    networks: [walix-net]
   gateway:
     image: ghcr.io/openfaas/gateway:0.27.12
     restart: always
@@ -37,12 +38,14 @@ services:
       - faas_nats_port=4222
       - scale_from_zero=true
       - secret_mount_path=/run/secrets
+      - enable_cors=true
+      - cors_allowed_origins=*
     depends_on: [nats,faas-swarm,prometheus]
     volumes:
       - ./secrets/basic-auth-user:/run/secrets/basic-auth-user
       - ./secrets/basic-auth-password:/run/secrets/basic-auth-password
     ports: ["8080:8080"]
-    networks: [toto]
+    networks: [walix-net]
   queue-worker:
     image: ghcr.io/openfaas/queue-worker:0.14.2
     restart: always
@@ -57,7 +60,7 @@ services:
     volumes:
       - ./secrets/basic-auth-user:/run/secrets/basic-auth-user
       - ./secrets/basic-auth-password:/run/secrets/basic-auth-password
-    networks: [toto]
+    networks: [walix-net]
   db:
     image: postgres:16-alpine
     restart: always
@@ -69,6 +72,6 @@ services:
       - pg-data:/var/lib/postgresql/data
       - ./pg-init:/docker-entrypoint-initdb.d
     ports: ["5432:5432"]
-    networks: [toto]
+    networks: [walix-net]
 volumes:
   pg-data:

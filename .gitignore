@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pytest_cache/
+
+# Virtual env
+.venv/
+env/
+venv/
+
+# Test artifacts
+htmlcov/
+coverage.xml
+*.cover
+.pytest_cache/
+
+# Docker Compose
+*.yml           # si tu as plusieurs fichiers compose, liste-les spécifiquement au besoin
+docker-compose.override.yml
+
+# Secrets
+secrets/
+*.key
+*.pem
+
+# PostgreSQL init
+pg-init/
+
+# Node / Frontend (si tu ajoutes plus tard)
+node_modules/
+dist/
+*.log
+
+# IDE / OS
+.vscode/
+.DS_Store
+Thumbs.db
