@@ -2,6 +2,7 @@ version: "1.0"
 provider:
   name: openfaas
   gateway: http://localhost:8080
+  network: mspr-tpre912-2025_default 
   env-common: &ref-env
   PYTHONPATH: "/home/app/function:/home/app/function/../common"
   DB_HOST: db

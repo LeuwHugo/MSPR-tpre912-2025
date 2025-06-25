@@ -1,98 +1,15 @@
-  <!-- index.html -->
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MSPR PoC</title>
-
-  <!-- 1) Définition de la fonction app() avant Alpine -->
-  <script type="module">
-    function app() {
-      return {
-        view: 'home',
-        username: '',
-        password: '',
-        totp: '',
-        qrPwd: '',
-        qr2fa: '',
-        message: '',
-        async createAccount() {
-          let res1 = await fetch('/function/genpwd', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ username: this.username })
-          });
-          let { password_qr } = await res1.json();
-          this.qrPwd = password_qr;
-
-          let res2 = await fetch('/function/gen2fa', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ username: this.username })
-          });
-          let { secret_qr } = await res2.json();
-          this.qr2fa = secret_qr;
-        },
-        async login() {
-          let res = await fetch('/function/authuser', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              username: this.username,
-              password: this.password,
-              totp: this.totp
-            })
-          });
-          if (res.ok) this.message = 'Connecté !';
-          else this.message = 'Échec de la connexion';
-        }
-      }
-    }
-    window.app = app;
-  </script>
-
-  <!-- 2) Puis Alpine.js -->
-  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
-  <link rel="stylesheet" href="/style.css" />
-</head>
-<body x-data="app()">
-  <template x-if="view==='home'">
-    <div class="container">
-      <h1>Bienvenue</h1>
-      <button @click="view='create'">Créer mon compte</button>
-      <button @click="view='login'">Se connecter</button>
-    </div>
-  </template>
-
-  <template x-if="view==='create'">
-    <div class="container">
-      <h2>Créer mon compte</h2>
-      <input type="text" x-model="username" placeholder="Pseudo" />
-      <button @click="createAccount()">Générer mes identifiants</button>
-      <div x-show="qrPwd">
-        <h3>Mot de passe</h3>
-        <img :src="`data:image/png;base64,${qrPwd}`" alt="QR mot de passe" />
-      </div>
-      <div x-show="qr2fa">
-        <h3>2FA</h3>
-        <img :src="`data:image/png;base64,${qr2fa}`" alt="QR 2FA" />
-      </div>
-      <button @click="view='home'">Accueil</button>
-    </div>
-  </template>
-
-  <template x-if="view==='login'">
-    <div class="container">
-      <h2>Connexion</h2>
-      <input type="text" x-model="username" placeholder="Pseudo" />
-      <input type="password" x-model="password" placeholder="Mot de passe" />
-      <input type="text" x-model="totp" placeholder="Code TOTP" />
-      <button @click="login()">Se connecter</button>
-      <div x-text="message"></div>
-      <button @click="view='home'">Accueil</button>
-    </div>
-  </template>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Votre CSS ici, à l’intérieur de <head> -->
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MSPR PoC</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>

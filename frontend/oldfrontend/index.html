@@ -1,0 +1,199 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MSPR PoC</title>
+
+  <!-- 1) Définition de app() avant Alpine.js -->
+  <script type="module">
+    function app() {
+      // Récupère view & token depuis l’URL
+      const params = new URLSearchParams(location.search);
+      const initialView = params.get('view');
+      const token = params.get('token');
+
+      return {
+        view: initialView || 'home',
+        username: '',
+        password: '',
+        totp: '',
+        qr2fa: '',
+        message: '',
+        resetToken: token || '',
+
+        // Inscription / génération identifiants
+        async createAccount() {
+          // Génère mot de passe
+          const r1 = await fetch('/genpwd', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ username: this.username })
+          });
+          const { password } = await r1.json();
+          this.password = password;
+
+          // Génère QR 2FA
+          const r2 = await fetch('/gen2fa', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ username: this.username })
+          });
+          const { secret_qr } = await r2.json();
+          this.qr2fa = secret_qr;
+        },
+
+        // Connexion
+        async login() {
+          const r = await fetch('/authuser', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              username: this.username,
+              password: this.password,
+              totp: this.totp
+            })
+          });
+          if (r.status === 403) {
+            this.message = 'Mot de passe expiré';
+            this.view = 'request';
+          } else {
+            this.message = r.ok ? 'Connecté !' : 'Échec de la connexion';
+          }
+        },
+
+        // Demande de lien de reset
+        async requestReset() {
+          const r = await fetch('/request-reset', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ username: this.username })
+          });
+          const { reset_link } = await r.json();
+          this.message = `Lien de réinitialisation : ${reset_link}`;
+        },
+
+        // Réinitialise en générant un nouveau mot de passe
+        // APRÈS
+        async resetPassword() {
+          const r = await fetch('/reset-password', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ username: this.resetToken })
+          });
+
+          if (!r.ok) {
+            this.message = 'Erreur de génération';
+            return;
+          }
+
+          const { password, password_qr } = await r.json();
+          this.password = password;
+          this.qrPwd = password_qr;
+          this.view = 'resetResult';
+        }
+
+
+      }
+    }
+    window.app = app;
+  </script>
+
+  <!-- 2) Alpine.js -->
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body x-data="app()">
+  <!-- Accueil -->
+  <template x-if="view==='home'">
+    <div class="container">
+      <h1>Bienvenue</h1>
+      <button @click="view='create'">Créer</button>
+      <button @click="view='login'">Connexion</button>
+      <button @click="view='request'">Mot de passe oublié</button>
+    </div>
+  </template>
+
+  <!-- Création -->
+  <template x-if="view==='create'">
+    <div class="container">
+      <h2>Création de compte</h2>
+      <input x-model="username" placeholder="Pseudo" />
+      <button @click="createAccount()">Générer mes identifiants</button>
+
+      <div x-show="password">
+        <h3>Mot de passe</h3>
+        <code x-text="password"></code>
+      </div>
+      <div x-show="qr2fa">
+        <h3>QRCode 2FA</h3>
+        <img :src="`data:image/png;base64,${qr2fa}`" alt="QR 2FA"/>
+      </div>
+
+      <button @click="view='home'">Retour</button>
+    </div>
+  </template>
+
+  <!-- Connexion -->
+  <template x-if="view==='login'">
+    <div class="container">
+      <h2>Connexion</h2>
+      <input x-model="username" placeholder="Pseudo" />
+      <input type="password" x-model="password" placeholder="Mot de passe" />
+      <input x-model="totp" placeholder="TOTP" />
+      <button @click="login()">Valider</button>
+      <div x-text="message"></div>
+      <button @click="view='home'">Accueil</button>
+    </div>
+  </template>
+
+  <!-- Mot de passe oublié -->
+  <template x-if="view==='request'">
+    <div class="container">
+      <h2>Mot de passe oublié</h2>
+      <input x-model="username" placeholder="Pseudo" />
+      <button @click="requestReset()">Envoyer lien</button>
+      <div x-text="message"></div>
+      <button @click="view='home'">Retour</button>
+    </div>
+  </template>
+
+  <!-- Réinitialisation (génération d’un nouveau mot de passe) -->
+  <template x-if="view==='reset'">
+    <div class="container">
+      <h2>Réinitialiser mot de passe</h2>
+      <p>Un nouveau mot de passe vous sera généré automatiquement.</p>
+      <button @click="resetPassword()">Générer nouveau mot de passe</button>
+
+      <div x-show="password">
+        <h3>Nouveau mot de passe</h3>
+        <code x-text="password"></code>
+      </div>
+      <div x-show="qrPwd">
+        <h3>QR mot de passe</h3>
+        <img :src="`data:image/png;base64,${qrPwd}`" alt="QR mot de passe"/>
+      </div>
+
+      <button @click="view='login'">Se connecter</button>
+    </div>
+  </template>
+
+  <!-- Résultat de réinitialisation -->
+<template x-if="view==='resetResult'">
+  <div class="container">
+    <h2>Mot de passe réinitialisé</h2>
+    <div x-show="password">
+      <h3>Nouveau mot de passe</h3>
+      <code x-text="password"></code>
+    </div>
+    <div x-show="qrPwd">
+      <h3>QR mot de passe</h3>
+      <img :src="`data:image/png;base64,${qrPwd}`" alt="QR mot de passe"/>
+    </div>
+    <button @click="view='login'">Aller à la connexion</button>
+  </div>
+</template>
+
+</body>
+</html>
