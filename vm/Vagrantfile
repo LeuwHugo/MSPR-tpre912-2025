@@ -1,0 +1,28 @@
+Vagrant.configure("2") do |config|
+  config.vm.box  = "bento/ubuntu-22.04"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 4096
+    vb.cpus   = 2
+  end
+
+  # ---------- Master ----------
+  config.vm.define "master" do |m|
+    m.vm.hostname = "master"
+    m.vm.network "private_network", ip: "192.168.56.10"
+    m.vm.provision "shell", path: "provision/master.sh"
+  end
+
+  # ---------- Worker ----------
+  config.vm.define "worker" do |w|
+    w.vm.hostname = "worker"
+    w.vm.network "private_network", ip: "192.168.56.11"
+
+    # ➊ Synced folder : l'hôte devient le "serveur" NFS
+    w.vm.synced_folder "./nfs-share", "/srv/nfs/postgres",
+                       type: "nfs", create: true,
+                       mount_options: ['rw','vers=4','tcp','nolock']
+
+    # ➋ Provision shell (déjà présent)
+    w.vm.provision "shell", path: "provision/worker.sh"
+  end
+end
